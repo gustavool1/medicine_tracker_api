@@ -1,7 +1,9 @@
+import { Medicine } from 'src/modules/medicines/entity/medicine.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -9,6 +11,9 @@ import {
 export class Users {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @OneToMany(() => Medicine, (medicine) => medicine.user)
+  medicines: Medicine[];
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
