@@ -1,3 +1,3 @@
 import { CreateUserDto } from './create-user-request';
-
-export { CreateUserDto };
+import { SignInDto } from './sign-in-request';
+export { CreateUserDto, SignInDto };
