@@ -1,3 +1,4 @@
+import { EntityClassOrSchema } from '@nestjs/typeorm/dist/interfaces/entity-class-or-schema.type';
 import { TypeOrmModule } from '@nestjs/typeorm/dist/typeorm.module';
 import { DataSource, DataSourceOptions } from 'typeorm';
 
@@ -10,7 +11,7 @@ export default class Database {
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      entities: ['dist/src/modules/**/entities/*{.ts,.js}'],
+      entities: [__dirname + '/../**/*.entity.js'],
       autoLoadEntities: false,
       synchronize: false,
       timezone: 'Z',
@@ -23,7 +24,7 @@ export default class Database {
       type: 'mysql',
       host: process.env.DB_HOST,
       port: Number(process.env.DB_PORT),
-      username: 'root',
+      username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
       entities: ['dist/src/modules/**/entities/*{.ts,.js}'],
@@ -32,6 +33,10 @@ export default class Database {
       migrationsRun: true,
       migrations: [`${__dirname}/migration/{.ts,*.js}`],
     };
+  }
+
+  static registerEntities(entities: EntityClassOrSchema[]) {
+    return TypeOrmModule.forFeature(entities);
   }
 }
 
