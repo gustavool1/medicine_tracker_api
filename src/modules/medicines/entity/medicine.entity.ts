@@ -8,7 +8,7 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Pill } from './pill.entity';
+import { Pill } from '../../pill/entity/pill.entity';
 
 @Entity('medicines')
 export class Medicine {
