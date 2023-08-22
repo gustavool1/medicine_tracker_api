@@ -2,15 +2,17 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Users } from '../entity/users.entity';
-import { CreateUserDto, SignInDto } from '../dtos/dtos';
+import { CreateUserDto, SignInDto, SignInResponse } from '../dtos/dtos';
 import * as bcrypt from 'bcrypt';
 import { AppError } from 'src/errors/app-error';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class UsersServices {
   constructor(
     @InjectRepository(Users)
     private readonly usersRepository: Repository<Users>,
+    private readonly jwtService: JwtService,
   ) {}
 
   async deleteUserById(id: string) {
@@ -41,7 +43,7 @@ export class UsersServices {
     return user;
   }
 
-  async signIn(signInData: SignInDto): Promise<Users> {
+  async signIn(signInData: SignInDto): Promise<SignInResponse> {
     const user = await this.usersRepository.findOne({
       where: { email: signInData.email },
     });
@@ -57,6 +59,12 @@ export class UsersServices {
     if (!passwordMatchesHash) {
       throw new AppError('Password incorrect', 400);
     }
-    return user;
+    return {
+      accessToken: await this.jwtService.signAsync({
+        ...signInData,
+        id: user.id,
+      }),
+      id: user.id,
+    };
   }
 }
