@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner, Table } from 'typeorm';
 
-export class CreateTableMedicines1692648825262 implements MigrationInterface {
-  private TABLE_NAME = 'medicines';
+export class CreatePillsTable1692713613027 implements MigrationInterface {
+  private TABLE_NAME = 'pills';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(
@@ -15,34 +15,37 @@ export class CreateTableMedicines1692648825262 implements MigrationInterface {
           },
           {
             name: 'id',
-            isPrimary: true,
             type: 'varchar',
+            isPrimary: true,
           },
           {
             name: 'name',
+            type: 'varchar', // Change 'string' to 'varchar'
+            isNullable: false, // You can specify if the column can be null or not
+          },
+          {
+            name: 'is_taken',
+            type: 'boolean',
+            isNullable: false,
+          },
+          {
+            name: 'take_pill_day',
+            type: 'date',
+          },
+          {
+            name: 'medicine_id',
             type: 'varchar',
-          },
-          {
-            name: 'user_id',
-            type: 'varchar',
-          },
-          {
-            name: 'frequency',
-            type: 'int',
-          },
-          {
-            name: 'until',
-            type: 'datetime',
+            isNullable: false,
           },
         ],
         foreignKeys: [
           {
-            name: 'fk_users_medicine',
-            columnNames: ['user_id'],
-            referencedTableName: 'users',
+            columnNames: ['medicine_id'],
+            referencedTableName: 'medicines',
             referencedColumnNames: ['id'],
             onDelete: 'CASCADE',
             onUpdate: 'CASCADE',
+            name: 'fk_pills_medicine',
           },
         ],
       }),
