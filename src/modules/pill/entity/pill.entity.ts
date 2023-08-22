@@ -5,7 +5,7 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Medicine } from './medicine.entity';
+import { Medicine } from '../../medicines/entity/medicine.entity';
 
 @Entity('pills')
 export class Pill {
