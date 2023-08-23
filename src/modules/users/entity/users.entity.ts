@@ -26,4 +26,13 @@ export class Users {
 
   @Column({ name: 'password_hash' })
   passwordHash: string;
+
+  constructor(user: Partial<Users>) {
+    this.id = user?.id;
+    this.medicines = user?.medicines;
+    this.createdAt = user?.createdAt;
+    this.name = user?.name;
+    this.email = user?.email;
+    this.passwordHash = user?.passwordHash;
+  }
 }
