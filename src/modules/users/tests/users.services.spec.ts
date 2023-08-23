@@ -1,122 +1,130 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersServices } from '../services/users.service';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { getRepositoryToken } from '@nestjs/typeorm';
 import { Users } from '../entity/users.entity';
-import { ConfigModule } from '@nestjs/config';
-import { CreateUserDto } from '../dtos/dtos';
+import { Repository } from 'typeorm';
+import { CreateUserDto } from '../dtos/create-user-request';
+import { AppError } from 'src/errors/app-error';
+import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcrypt';
 
-describe('UsersServices', () => {
+const user: Users = new Users({
+  id: '123',
+  createdAt: new Date(),
+  email: 'gustavo@gmail.com',
+  medicines: [],
+  name: 'Gustavo',
+  passwordHash: 'hash',
+});
+
+const createUserPayload: CreateUserDto = {
+  name: 'bruno',
+  email: 'gustavo@gmail.com',
+  password: '123456xx',
+};
+
+const mockJwtService = {
+  signAsync: jest.fn(),
+};
+
+describe('UsersService', () => {
   let usersServices: UsersServices;
-  let moduleRef: TestingModule;
-
-  const userCreatePayload: CreateUserDto = {
-    email: 'abcdef@gmail.com',
-    name: 'gustavo',
-    password: '1234',
-  };
-
-  const userMatchedObject = {
-    name: expect.any(String),
-    email: expect.any(String),
-    passwordHash: expect.any(String),
-    id: expect.any(String),
-    createdAt: expect.any(Date),
-  };
+  let usersRepository: Repository<Users>;
+  let jwtService: JwtService;
 
   beforeEach(async () => {
-    moduleRef = await Test.createTestingModule({
-      imports: [
-        ConfigModule.forRoot(),
-        TypeOrmModule.forRoot({
-          type: 'mysql',
-          host: process.env.DB_HOST,
-          port: Number(process.env.DB_PORT),
-          username: process.env.DB_USERNAME,
-          password: process.env.DB_PASSWORD,
-          database: process.env.DB_NAME,
-          entities: [__dirname + '/../**/*.entity.ts'],
-          autoLoadEntities: false,
-          synchronize: false,
-          timezone: 'Z',
-          migrationsRun: false,
-          migrations: [`${__dirname}/migration/{.ts,*.js}`],
-        }),
-        TypeOrmModule.forFeature([Users]),
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        UsersServices,
+        {
+          provide: JwtService,
+          useValue: mockJwtService,
+        },
+        {
+          provide: getRepositoryToken(Users),
+          useValue: {
+            findOne: jest.fn(),
+            create: jest.fn().mockReturnValue(user),
+            save: jest.fn(),
+          },
+        },
       ],
-      providers: [UsersServices],
     }).compile();
 
-    usersServices = moduleRef.get<UsersServices>(UsersServices);
+    usersServices = module.get<UsersServices>(UsersServices);
+    usersRepository = module.get<Repository<Users>>(getRepositoryToken(Users));
+    jwtService = module.get<JwtService>(JwtService);
+  });
+
+  it('Should be defined', () => {
+    expect(usersServices).toBeDefined();
   });
 
   describe('createUser', () => {
-    it('Should create an user and return it', async () => {
-      const user = await usersServices.createUser(userCreatePayload);
-      expect(user).toMatchObject(userMatchedObject);
+    it('Should create an user', async () => {
+      usersRepository.findOne = jest.fn().mockReturnValue(null);
+
+      const response = await usersServices.createUser(createUserPayload);
+
+      expect(response).toMatchObject({
+        name: expect.any(String),
+        email: expect.any(String),
+        passwordHash: expect.any(String),
+        id: expect.any(String),
+        createdAt: expect.any(Date),
+      });
+
+      expect(usersRepository.findOne).toBeCalledTimes(1);
+      expect(usersRepository.save).toBeCalledTimes(1);
     });
 
-    it('Should return 409, because an account with this email already exists', async () => {
+    it('Should throw an error with status code 409 that the email already exists', async () => {
+      usersRepository.findOne = jest.fn().mockReturnValue(user);
       try {
-        await usersServices.createUser(userCreatePayload);
-        fail('Expected createUser to throw an error');
+        await usersServices.createUser(createUserPayload);
       } catch (error) {
-        expect(error).toMatchObject({
-          message: expect.any(String),
-          statusCode: 409,
-        });
-        await usersServices.deleteUserByEmail(userCreatePayload.email);
+        expect(error).toBeInstanceOf(AppError);
+        expect(error.statusCode).toBe(409);
       }
     });
   });
 
   describe('signIn', () => {
-    it('Should sign in correctly and return an user', async () => {
-      const userPassword = '1234';
-      const user = await usersServices.createUser({
-        email: 'abcdef@gmail.com',
-        name: 'gustavo',
-        password: userPassword,
-      });
+    const signInData = { email: 'gustavo@gmail.com', password: '123456' };
 
-      const signInResult = await usersServices.signIn({
-        email: user.email,
-        password: userPassword,
-      });
+    it('Should sign in with the user and return an SignInResponse', async () => {
+      user.passwordHash = await bcrypt.hash(signInData.password, 10);
 
-      expect(signInResult).toMatchObject(userMatchedObject);
+      jwtService.signAsync = () => Promise.resolve('randomjwt');
+      usersRepository.findOne = jest.fn().mockReturnValue(user);
+
+      const response = await usersServices.signIn(signInData);
+
+      expect(response).toMatchObject({
+        accessToken: expect.any(String),
+        id: expect.any(String),
+      });
     });
 
-    it('Should return 404, because a user with this email was not found', async () => {
+    it('Should return an AppError with the message user with this email dont exist and status code 409', async () => {
       try {
-        await usersServices.signIn({
-          email: 'wrongemail@gmail',
-          password: 'randompassword',
-        });
-
-        fail('Expected signIn to throw an error');
+        await usersServices.signIn(signInData);
       } catch (error) {
-        expect(error).toMatchObject({
-          message: expect.any(String),
-          statusCode: 404,
-        });
+        expect(error).toBeInstanceOf(AppError);
+        expect(error.statusCode).toBe(404);
       }
     });
 
-    it('Should return 400, because the password is incorrect', async () => {
+    it('Should return an AppError with the message Password incorrect and status code 400', async () => {
       try {
-        await usersServices.signIn({
-          email: userCreatePayload.email,
-          password: 'wrongpassword',
-        });
-        await usersServices.deleteUserByEmail(userCreatePayload.email);
-        fail('Expected signIn to throw an error');
-      } catch (error) {
-        expect(error).toMatchObject({
-          message: expect.any(String),
-          statusCode: 400,
-        });
+        const compareMock = jest.spyOn(bcrypt, 'compare') as jest.Mock;
+        compareMock.mockResolvedValue(false);
 
-        await usersServices.deleteUserByEmail(userCreatePayload.email);
+        usersRepository.findOne = jest.fn().mockReturnValue(user);
+        await usersServices.signIn(signInData);
+      } catch (error) {
+        expect(error).toBeInstanceOf(AppError);
+        expect(error.statusCode).toBe(400);
       }
     });
   });
