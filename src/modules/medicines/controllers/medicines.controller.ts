@@ -1,11 +1,8 @@
 import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
 import { MedicinesServices } from '../services/medicines.services';
-import {
-  CreateMedicineDto,
-  CreateMedicineResponseDto,
-  MedicinesByDatePayload,
-} from '../dtos/dtos';
+import { CreateMedicineDto, MedicinesByDatePayload } from '../dtos/dtos';
 import { AuthGuard } from 'src/guards/auth.guard';
+import { Medicine } from '../entity/medicine.entity';
 
 @Controller('medicines')
 export class MedicinesController {
@@ -16,7 +13,7 @@ export class MedicinesController {
   async createMedicines(
     @Body() data: CreateMedicineDto,
     @Req() req,
-  ): Promise<CreateMedicineResponseDto> {
+  ): Promise<Medicine> {
     return await this.medicinesServices.createMedicine({
       ...data,
       userId: req.user.id,
