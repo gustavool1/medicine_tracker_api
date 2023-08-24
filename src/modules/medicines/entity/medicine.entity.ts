@@ -36,4 +36,15 @@ export class Medicine {
 
   @OneToMany(() => Pill, (pills) => pills.medicine)
   pills: Pill[];
+
+  constructor(medicine: Partial<Medicine>) {
+    this.id = medicine?.id;
+    this.createdAt = medicine?.createdAt;
+    this.name = medicine?.name;
+    this.frequency = medicine?.frequency;
+    this.until = medicine?.until;
+    this.userId = medicine?.userId;
+    this.user = medicine?.user;
+    this.pills = medicine?.pills;
+  }
 }

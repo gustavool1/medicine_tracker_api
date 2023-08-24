@@ -28,4 +28,13 @@ export class Pill {
   @ManyToOne(() => Pill)
   @JoinColumn({ name: 'medicine_id', referencedColumnName: 'id' })
   medicine: Medicine;
+
+  constructor(pill: Partial<Pill>) {
+    this.id = pill?.id;
+    this.name = pill?.name;
+    this.isTaken = pill?.isTaken;
+    this.medicineId = pill?.medicineId;
+    this.takePillDay = pill?.takePillDay;
+    this.medicine = pill?.medicine;
+  }
 }
