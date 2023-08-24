@@ -2,11 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { Medicine } from '../entity/medicine.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CreateMedicineDto } from '../dtos/create-medicine.dto';
 import { MedicinesByDatePayload } from '../dtos/medicines-by-date.dto';
 import { addDays } from 'date-fns';
-import { Pill } from '../entity/pill.entity';
-import { CreateMedicineResponseDto } from '../dtos/create-medicine-response.dto';
+import { Pill } from '../../pill/entity/pill.entity';
 
 @Injectable()
 export class MedicinesServices {
@@ -18,14 +16,13 @@ export class MedicinesServices {
     private readonly pillRepository: Repository<Pill>,
   ) {}
 
-  async createMedicine(
-    medicinePayload: CreateMedicineDto,
-  ): Promise<CreateMedicineResponseDto> {
-    const medicine = new Medicine();
-    medicine.name = medicinePayload.name;
-    medicine.frequency = medicinePayload.frequency;
-    medicine.until = medicinePayload.until;
-    medicine.userId = medicinePayload.userId;
+  async createMedicine(medicinePayload): Promise<Medicine> {
+    const medicine = new Medicine({
+      name: medicinePayload.name,
+      frequency: medicinePayload.frequency,
+      until: medicinePayload.until,
+      userId: medicinePayload.userId,
+    });
 
     const medicineSaved = await this.medicineRepository.create(medicine);
     await this.medicineRepository.save(medicineSaved);
@@ -34,8 +31,24 @@ export class MedicinesServices {
       new Date(medicineSaved.until),
       medicineSaved,
     );
+    medicineSaved.pills = pills;
 
-    return { medicine: { ...medicineSaved }, pills };
+    return medicineSaved;
+  }
+
+  async getUsersMedicines(userId: string, date?: Date) {
+    return await this.medicineRepository.find({
+      where: { userId, createdAt: date },
+    });
+  }
+
+  async getUsersMedicinesByDate(
+    medicinesByDatePayload: MedicinesByDatePayload,
+  ) {
+    return await this.getUsersMedicines(
+      medicinesByDatePayload.userId,
+      medicinesByDatePayload.date,
+    );
   }
 
   async createPillsUntilGivenDate(
@@ -45,13 +58,13 @@ export class MedicinesServices {
     let startDate = medicine.createdAt;
     const limitDate = addDays(startDate, 30);
     const pills: Pill[] = [];
-
     while (startDate < endDate && startDate < limitDate) {
-      const pill = new Pill();
-      pill.name = medicine.name;
-      pill.medicineId = medicine.id;
-      pill.isTaken = false;
-      pill.takePillDay = startDate;
+      const pill = new Pill({
+        name: medicine.name,
+        medicineId: medicine.id,
+        isTaken: false,
+        takePillDay: startDate,
+      });
 
       const savedPill = await this.pillRepository.create(pill);
       await this.pillRepository.save(savedPill);
