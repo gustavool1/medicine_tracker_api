@@ -1,8 +1,17 @@
-import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { MedicinesServices } from '../services/medicines.services';
-import { CreateMedicineDto, MedicinesByDatePayload } from '../dtos/dtos';
+import { CreateMedicineDto } from '../dtos/dtos';
 import { AuthGuard } from 'src/guards/auth.guard';
 import { Medicine } from '../entity/medicine.entity';
+import jwt_decode from 'jwt-decode';
 
 @Controller('medicines')
 export class MedicinesController {
@@ -21,8 +30,17 @@ export class MedicinesController {
   }
 
   @UseGuards(AuthGuard)
-  @Post('/medicinesByDate')
-  async getUsersMedicinesByDate(@Body() data: MedicinesByDatePayload) {
-    return await this.medicinesServices.getUsersMedicinesByDate(data);
+  @Get()
+  async getUserMedicines(@Req() req): Promise<Medicine[]> {
+    const token = req.headers.authorization.split(' ')[1];
+    const decodedToken = jwt_decode(token);
+
+    return await this.medicinesServices.getUserMedicines(decodedToken['id']);
+  }
+
+  @UseGuards(AuthGuard)
+  @Get('/pills/:medicineId')
+  async getUsersMedicinesByDate(@Param('medicineId') medicineId: string) {
+    return await this.medicinesServices.getMedicinesPills(medicineId);
   }
 }
