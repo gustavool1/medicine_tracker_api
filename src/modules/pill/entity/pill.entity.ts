@@ -25,6 +25,9 @@ export class Pill {
   @Column({ name: 'take_pill_day' })
   takePillDay: Date;
 
+  @Column({ name: 'take_pill_hour' })
+  takePillHour: string;
+
   @ManyToOne(() => Pill)
   @JoinColumn({ name: 'medicine_id', referencedColumnName: 'id' })
   medicine: Medicine;
@@ -35,6 +38,7 @@ export class Pill {
     this.isTaken = pill?.isTaken;
     this.medicineId = pill?.medicineId;
     this.takePillDay = pill?.takePillDay;
+    this.takePillHour = pill?.takePillHour;
     this.medicine = pill?.medicine;
   }
 }
