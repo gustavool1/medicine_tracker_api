@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Pill } from '../entity/pill.entity';
 import { Medicine } from 'src/modules/medicines/entity/medicine.entity';
 import { PillsByDatePayload } from '../dtos/pills-by-date-payload';
+import { AppError } from 'src/errors/app-error';
 
 @Injectable()
 export class PillServices {
@@ -35,6 +36,9 @@ export class PillServices {
 
   async takePill(pillId: string) {
     const pill = await this.pillsRepository.findOne({ where: { id: pillId } });
+    if (!pill) {
+      throw new AppError('A Pill with this id was not found ', 404);
+    }
     pill.isTaken = true;
     await this.pillsRepository.save(pill);
 
