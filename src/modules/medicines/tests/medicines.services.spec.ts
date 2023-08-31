@@ -4,17 +4,19 @@ import { Medicine } from '../entity/medicine.entity';
 import { Pill } from '../entity/entities';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { addDays } from 'date-fns';
+import { AppError } from 'src/errors/app-error';
 
 const createMedicinePayload = {
   name: 'Paracetamol',
-  frequency: 5,
+  frequency: 2,
   until: addDays(new Date(), 3),
   userId: '',
+  reminders: ['15:42', '13:20'],
 };
 
 const medicine: Medicine = new Medicine({
   name: 'Paracetamol',
-  frequency: 5,
+  frequency: 2,
   until: addDays(new Date(), 3),
   userId: '53357394-a478-4b74-9daa-429527ba404f',
   id: 'fde49ff7-1ba3-4d18-ad40-3d21074b18a9',
@@ -65,7 +67,22 @@ describe('MedicinesServices', () => {
       );
 
       expect(result).toBeInstanceOf(Medicine);
-      expect(result.pills.length).toBe(3);
+      expect(result.pills.length).toBe(6);
+    });
+
+    it('Should throw an AppError', async () => {
+      const today = new Date();
+
+      const yesterday = new Date(today);
+      yesterday.setDate(today.getDate() - 1);
+      createMedicinePayload.until = yesterday;
+
+      try {
+        await medicinesServices.createMedicine(createMedicinePayload);
+      } catch (error) {
+        expect(error).toBeInstanceOf(AppError);
+        expect(error.statusCode).toBe(401);
+      }
     });
   });
 });
