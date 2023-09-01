@@ -35,7 +35,9 @@ export class PillServices {
   }
 
   async takePill(pillId: string) {
-    const pill = await this.pillsRepository.findOne({ where: { id: pillId } });
+    const pill = await this.pillsRepository.findOne({
+      where: { id: Number(pillId) },
+    });
     if (!pill) {
       throw new AppError('A Pill with this id was not found ', 404);
     }

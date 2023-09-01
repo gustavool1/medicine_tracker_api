@@ -9,8 +9,8 @@ import { Medicine } from '../../medicines/entity/medicine.entity';
 
 @Entity('pills')
 export class Pill {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+  @PrimaryGeneratedColumn('increment')
+  id: number;
 
   @JoinColumn()
   @Column()

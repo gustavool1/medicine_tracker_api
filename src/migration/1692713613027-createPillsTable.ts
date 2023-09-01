@@ -15,13 +15,15 @@ export class CreatePillsTable1692713613027 implements MigrationInterface {
           },
           {
             name: 'id',
-            type: 'varchar',
+            type: 'int',
             isPrimary: true,
+            isGenerated: true,
+            generationStrategy: 'increment',
           },
           {
             name: 'name',
-            type: 'varchar', // Change 'string' to 'varchar'
-            isNullable: false, // You can specify if the column can be null or not
+            type: 'varchar',
+            isNullable: false,
           },
           {
             name: 'is_taken',
