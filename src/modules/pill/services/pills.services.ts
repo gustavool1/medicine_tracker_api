@@ -46,4 +46,11 @@ export class PillServices {
 
     if (pill) return { message: 'sucess', statusCode: 200 };
   }
+
+  async getPillById(pillId: number) {
+    const pill = await this.pillsRepository.findOne({
+      where: { id: pillId },
+    });
+    return pill;
+  }
 }
