@@ -25,4 +25,11 @@ export class PillController {
   async takePill(@Param('id') pillId: string) {
     await this.pillServices.takePill(pillId);
   }
+
+  @UseGuards(AuthGuard)
+  @Get(':id')
+  async getPillById(@Param('id') pillId: number): Promise<Pill> {
+    const result = await this.pillServices.getPillById(pillId);
+    return result;
+  }
 }
