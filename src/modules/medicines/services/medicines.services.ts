@@ -68,7 +68,10 @@ export class MedicinesServices {
     let startDate = medicine.createdAt;
     const limitDate = addDays(startDate, 30);
     const pills: Pill[] = [];
-    while (startDate < endDate && startDate < limitDate) {
+    while (
+      startDate.getDay() <= endDate.getDay() &&
+      startDate.getDay() < limitDate.getDay()
+    ) {
       for (let i = 0; i < medicine.frequency; i++) {
         const pill = new Pill({
           name: medicine.name,
