@@ -59,12 +59,66 @@ export class UsersServices {
     if (!passwordMatchesHash) {
       throw new AppError('Password incorrect', 400);
     }
-    return {
-      accessToken: await this.jwtService.signAsync({
+    const refreshToken = await this.jwtService.signAsync(
+      {
         ...signInData,
         id: user.id,
-      }),
+      },
+      { expiresIn: process.env.JWT_EXPIRES_REFRESH },
+    );
+    const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+
+    user.refreshToken = hashedRefreshToken;
+    this.usersRepository.save(user);
+
+    return {
+      accessToken: await this.jwtService.signAsync(
+        {
+          ...signInData,
+          id: user.id,
+        },
+        {
+          expiresIn: process.env.JWT_EXPIRES_SECRET_TOKEN,
+          secret: process.env.JWT_SECRET_TOKEN,
+        },
+      ),
+      refreshToken,
       id: user.id,
     };
+  }
+
+  async refresh(refreshToken: string): Promise<any> {
+    const decoded = this.jwtService.decode(refreshToken);
+    if (!decoded) {
+      throw new AppError('Invalid token', 401);
+    }
+
+    const user = await this.usersRepository.findOne({
+      where: { email: decoded['email'] },
+    });
+
+    if (!user) {
+      throw new AppError('User with this id does not exist', 404);
+    }
+
+    const refreshTokenMatches = await bcrypt.compare(
+      refreshToken,
+      user.refreshToken,
+    );
+    if (!refreshTokenMatches) {
+      throw new AppError('Invalid token', 401);
+    }
+
+    delete user.passwordHash;
+    delete user.refreshToken;
+
+    const refreshedToken = await this.jwtService.signAsync(
+      { ...user },
+      {
+        expiresIn: process.env.JWT_EXPIRES_SECRET_TOKEN,
+        secret: process.env.JWT_SECRET_TOKEN,
+      },
+    );
+    return { accessToken: refreshedToken };
   }
 }

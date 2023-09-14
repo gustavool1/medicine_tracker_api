@@ -27,6 +27,9 @@ export class Users {
   @Column({ name: 'password_hash' })
   passwordHash: string;
 
+  @Column({ name: 'refresh_token' })
+  refreshToken: string;
+
   constructor(user: Partial<Users>) {
     this.id = user?.id;
     this.medicines = user?.medicines;
@@ -34,5 +37,6 @@ export class Users {
     this.name = user?.name;
     this.email = user?.email;
     this.passwordHash = user?.passwordHash;
+    this.refreshToken = user?.refreshToken;
   }
 }
