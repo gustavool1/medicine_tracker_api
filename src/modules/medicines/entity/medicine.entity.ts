@@ -27,6 +27,9 @@ export class Medicine {
   @Column()
   until: Date;
 
+  @Column({ name: 'start_date' })
+  from: Date;
+
   @Column({ name: 'user_id' })
   userId: string;
 
@@ -43,6 +46,7 @@ export class Medicine {
     this.name = medicine?.name;
     this.frequency = medicine?.frequency;
     this.until = medicine?.until;
+    this.from = medicine?.from;
     this.userId = medicine?.userId;
     this.user = medicine?.user;
     this.pills = medicine?.pills;

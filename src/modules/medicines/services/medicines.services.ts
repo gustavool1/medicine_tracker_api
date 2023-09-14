@@ -18,7 +18,10 @@ export class MedicinesServices {
 
   async createMedicine(medicinePayload): Promise<Medicine> {
     const today = new Date();
-    if (new Date(medicinePayload.until) < today) {
+    if (
+      new Date(medicinePayload.until) < today ||
+      new Date(medicinePayload.from) > new Date(medicinePayload.until)
+    ) {
       throw new AppError(
         "You can't create an medicine to a date in the past.",
         400,
@@ -28,6 +31,7 @@ export class MedicinesServices {
       name: medicinePayload.name,
       frequency: medicinePayload.frequency,
       until: medicinePayload.until,
+      from: medicinePayload.from,
       userId: medicinePayload.userId,
     });
 
@@ -57,6 +61,7 @@ export class MedicinesServices {
       where: {
         userId,
       },
+      relations: ['pills'],
     });
   }
 
@@ -65,13 +70,10 @@ export class MedicinesServices {
     medicine: Medicine,
     reminders: string[],
   ): Promise<Pill[]> {
-    let startDate = medicine.createdAt;
+    let startDate = new Date(medicine.from);
     const limitDate = addDays(startDate, 30);
     const pills: Pill[] = [];
-    while (
-      startDate.getDay() <= endDate.getDay() &&
-      startDate.getDay() < limitDate.getDay()
-    ) {
+    while (startDate <= endDate && startDate < limitDate) {
       for (let i = 0; i < medicine.frequency; i++) {
         const pill = new Pill({
           name: medicine.name,

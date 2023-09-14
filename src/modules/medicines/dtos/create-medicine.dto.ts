@@ -10,5 +10,8 @@ export class CreateMedicineDto {
   @IsNotEmpty()
   until: Date;
 
+  @IsNotEmpty()
+  from: Date;
+
   reminders: string[];
 }
