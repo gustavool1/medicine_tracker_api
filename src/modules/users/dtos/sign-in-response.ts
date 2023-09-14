@@ -6,4 +6,7 @@ export class SignInResponse {
 
   @IsNotEmpty()
   id: string;
+
+  @IsNotEmpty()
+  refreshToken: string;
 }

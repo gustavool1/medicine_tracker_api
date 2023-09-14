@@ -5,6 +5,7 @@ import { Pill } from '../entity/pill.entity';
 import { Medicine } from 'src/modules/medicines/entity/medicine.entity';
 import { PillsByDatePayload } from '../dtos/pills-by-date-payload';
 import { AppError } from 'src/errors/app-error';
+import { ChangeReminderDto } from '../dtos/change-reminder-dto';
 
 @Injectable()
 export class PillServices {
@@ -52,5 +53,18 @@ export class PillServices {
       where: { id: pillId },
     });
     return pill;
+  }
+
+  async changeReminder(data: ChangeReminderDto) {
+    const pill = await this.pillsRepository.findOne({
+      where: { id: data.id },
+    });
+    if (!pill) {
+      throw new AppError('A Pill with this id was not found ', 404);
+    }
+    pill.takePillHour = data.time;
+    await this.pillsRepository.save(pill);
+
+    if (pill) return { message: 'sucess', statusCode: 200 };
   }
 }

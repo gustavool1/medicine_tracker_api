@@ -1,8 +1,17 @@
-import { Controller, Get, Param, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { PillServices } from '../services/pills.services';
 import { Pill } from '../entity/pill.entity';
 import { AuthGuard } from 'src/guards/auth.guard';
 import jwt_decode from 'jwt-decode';
+import { ChangeReminderDto } from '../dtos/change-reminder-dto';
 
 @Controller('pill')
 export class PillController {
@@ -31,5 +40,11 @@ export class PillController {
   async getPillById(@Param('id') pillId: number): Promise<Pill> {
     const result = await this.pillServices.getPillById(pillId);
     return result;
+  }
+
+  @UseGuards(AuthGuard)
+  @Patch('changeReminder/:id')
+  async changeReminder(@Body() body: ChangeReminderDto) {
+    await this.pillServices.changeReminder(body);
   }
 }
