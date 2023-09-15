@@ -64,7 +64,10 @@ export class UsersServices {
         ...signInData,
         id: user.id,
       },
-      { expiresIn: process.env.JWT_EXPIRES_REFRESH },
+      {
+        expiresIn: process.env.JWT_EXPIRES_REFRESH,
+        secret: process.env.JWT_SECRET_REFRESH,
+      },
     );
     const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
 
