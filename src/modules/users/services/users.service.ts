@@ -36,6 +36,7 @@ export class UsersServices {
     const user = await this.usersRepository.create({
       ...userData,
       passwordHash: hashedPassword,
+      refreshToken: '',
     });
 
     await this.usersRepository.save(user);

@@ -45,7 +45,7 @@ export class PillServices {
     pill.isTaken = true;
     await this.pillsRepository.save(pill);
 
-    if (pill) return { message: 'sucess', statusCode: 200 };
+    if (pill) return { message: 'success', statusCode: 200 };
   }
 
   async getPillById(pillId: number) {

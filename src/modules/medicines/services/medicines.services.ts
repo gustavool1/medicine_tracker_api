@@ -91,4 +91,15 @@ export class MedicinesServices {
     }
     return pills;
   }
+
+  async deleteMedicineById(id: string) {
+    const medicine = await this.medicineRepository.findOne({
+      where: { id },
+    });
+
+    if (!medicine) {
+      throw new AppError('A medicine with this id was not found', 404);
+    }
+    await this.medicineRepository.remove(medicine);
+  }
 }

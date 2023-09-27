@@ -43,4 +43,9 @@ export class MedicinesController {
   async getUsersMedicinesByDate(@Param('medicineId') medicineId: string) {
     return await this.medicinesServices.getMedicinesPills(medicineId);
   }
+
+  @Get('/:medicineId')
+  async deleteMedicineById(@Param('medicineId') id: string) {
+    return await this.medicinesServices.deleteMedicineById(id);
+  }
 }
