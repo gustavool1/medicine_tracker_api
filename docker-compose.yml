@@ -1,7 +1,6 @@
 services:
   app:
-    image: node:18-alpine
-    command: sh -c "yarn install && yarn build && yarn migration:run && yarn start:dev"
+    image: medicine-tracker
     ports:
       - 127.0.0.1:3000:3000
     working_dir: /app
@@ -21,6 +20,8 @@ services:
     image: mysql:8.0
     ports:
       - '3307:3306'
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     environment:
       MYSQL_ROOT_PASSWORD: '${DB_PASSWORD}'
       MYSQL_DATABASE: '${DB_NAME}'
