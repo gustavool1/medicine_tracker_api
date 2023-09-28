@@ -7,7 +7,7 @@ services:
     volumes:
       - ./:/app
     environment:
-      MYSQL_HOST: 'mysql'
+      MYSQL_HOST: '${DB_HOST}'
       MYSQL_USER: '${DB_USERNAME}'
       MYSQL_PASSWORD: '${DB_PASSWORD}'
       MYSQL_DB: '${DB_NAME}'
