@@ -14,6 +14,7 @@ Medicine tracker é um projeto criado para ajudar os usuários a manterem contro
 - Node
 - Nest
 - TypeScript
+- Jest
 - TypeORM
 - Jwt
 
