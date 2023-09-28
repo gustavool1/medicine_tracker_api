@@ -25,9 +25,12 @@ Medicine tracker é um projeto criado para ajudar os usuários a manterem contro
 # clonar repositório
 git clone https://github.com/gustavool1/medicine_tracker_api backend
 
-# entrar na pasta do projeto back end
+# Entrar na pasta do projeto back end
 cd backend
 Preencher .env, tome como base o .env.example
+
+# Instalar dependências do projeto
+yarn
 
 # Criar a imagem docker do app
 sudo docker build -t medicine-tracker .
